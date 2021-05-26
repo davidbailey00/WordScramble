@@ -12,6 +12,10 @@ struct ContentView: View {
     @State private var rootWord = ""
     @State private var newWord = ""
 
+    @State private var errorTitle = ""
+    @State private var errorMessage = ""
+    @State private var showingError = false
+
     var body: some View {
         NavigationView {
             VStack {
@@ -29,6 +33,9 @@ struct ContentView: View {
             }
             .navigationTitle(rootWord)
             .onAppear(perform: startGame)
+            .alert(isPresented: $showingError) {
+                Alert(title: Text(errorTitle), message: Text(errorMessage))
+            }
         }
     }
 
@@ -41,7 +48,26 @@ struct ContentView: View {
             return
         }
 
-        // @TODO: extra validation
+        guard !usedWords.contains(answer) else {
+            return showError(
+                title: "Word used already",
+                message: "Try something new!"
+            )
+        }
+
+        guard rootWord.lowercased().contains(answer) else {
+            return showError(
+                title: "Word not valid",
+                message: "\"\(answer)\" isn't inside \"\(rootWord)\""
+            )
+        }
+
+        guard isReal(word: answer) else {
+            return showError(
+                title: "Word not valid",
+                message: "\"\(answer)\" ins't a valid English word"
+            )
+        }
 
         usedWords.insert(answer, at: 0)
         newWord = ""
@@ -60,6 +86,22 @@ struct ContentView: View {
 
         let allWords = startWords.components(separatedBy: "\n")
         rootWord = allWords.randomElement()!
+    }
+
+    func isReal(word: String) -> Bool {
+        let checker = UITextChecker()
+        let range = NSRange(location: 0, length: word.utf16.count)
+
+        let misspelledRange = checker.rangeOfMisspelledWord(
+            in: word, range: range, startingAt: 0, wrap: false, language: "en"
+        )
+        return misspelledRange.location == NSNotFound
+    }
+
+    func showError(title: String, message: String) {
+        errorTitle = title
+        errorMessage = message
+        showingError = true
     }
 }
 
