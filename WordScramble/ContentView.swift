@@ -28,6 +28,7 @@ struct ContentView: View {
                 }
             }
             .navigationTitle(rootWord)
+            .onAppear(perform: startGame)
         }
     }
 
@@ -44,6 +45,21 @@ struct ContentView: View {
 
         usedWords.insert(answer, at: 0)
         newWord = ""
+    }
+
+    func startGame() {
+        guard let startWordsURL = Bundle.main.url(
+            forResource: "start", withExtension: "txt"
+        ) else {
+            fatalError("Failed to get resource URL")
+        }
+
+        guard let startWords = try? String(contentsOf: startWordsURL) else {
+            fatalError("Failed to construct string from resource")
+        }
+
+        let allWords = startWords.components(separatedBy: "\n")
+        rootWord = allWords.randomElement()!
     }
 }
 
