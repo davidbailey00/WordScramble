@@ -30,6 +30,7 @@ struct ContentView: View {
                     Image(systemName: "\($0.count).circle")
                     Text($0)
                 }
+                .listStyle(GroupedListStyle())
             }
             .navigationTitle(rootWord)
             .onAppear(perform: startGame)
@@ -65,7 +66,7 @@ struct ContentView: View {
         guard isReal(word: answer) else {
             return showError(
                 title: "Word not valid",
-                message: "\"\(answer)\" ins't a valid English word"
+                message: "\"\(answer)\" isn't a valid English word"
             )
         }
 
