@@ -24,11 +24,13 @@ struct ContentView: View {
                 )
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .autocapitalization(.none)
+                .disableAutocorrection(true)
                 .padding()
 
                 List(usedWords, id: \.self) {
-                    Image(systemName: "\($0.count).circle")
                     Text($0)
+                    Spacer()
+                    Image(systemName: "\($0.count).circle")
                 }
                 .listStyle(GroupedListStyle())
             }
