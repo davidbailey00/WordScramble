@@ -37,12 +37,8 @@ struct ContentView: View {
                 .disableAutocorrection(true)
                 .padding()
 
-                List(usedWords, id: \.self) {
-                    Text($0)
-                    Spacer()
-                    Image(systemName: "\($0.count).circle")
-                }
-                .listStyle(GroupedListStyle())
+                WordList(words: usedWords)
+                    .listStyle(GroupedListStyle())
             }
             .navigationTitle(rootWord)
             .navigationBarItems(
@@ -156,6 +152,34 @@ struct ContentView: View {
             in: word, range: range, startingAt: 0, wrap: false, language: "en"
         )
         return misspelledRange.location == NSNotFound
+    }
+}
+
+struct WordList: View {
+    var words: [String]
+
+    var wordsByScore: [Int: [String]] {
+        Dictionary(grouping: words, by: { $0.count })
+    }
+
+    var body: some View {
+        List {
+            ForEach(
+                wordsByScore.keys.sorted().reversed(),
+                id: \.self
+            ) { score in
+                Section(header: Text("\(score) letters")) {
+                    ForEach(wordsByScore[score]!, id: \.self) { word in
+                        HStack {
+                            Text(word)
+                            Spacer()
+                            Image(systemName: "\(word.count).circle")
+                                .accessibilityHidden(true)
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
