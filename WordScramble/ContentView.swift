@@ -16,6 +16,12 @@ struct ContentView: View {
     @State private var errorMessage = ""
     @State private var showingError = false
 
+    var score: Int {
+        usedWords
+            .map { word in word.count }
+            .reduce(0) { x, y in x + y }
+    }
+
     var body: some View {
         NavigationView {
             VStack {
@@ -35,6 +41,13 @@ struct ContentView: View {
                 .listStyle(GroupedListStyle())
             }
             .navigationTitle(rootWord)
+            .navigationBarItems(
+                leading: Text("Score: \(score)"),
+                trailing: Button("Restart") {
+                    startGame()
+                    usedWords = []
+                }
+            )
             .onAppear(perform: startGame)
             .alert(isPresented: $showingError) {
                 Alert(title: Text(errorTitle), message: Text(errorMessage))
