@@ -7,14 +7,18 @@
 
 import SwiftUI
 
+struct AlertItem: Identifiable {
+    var id = UUID()
+    var title: Text
+    var message: Text
+    var buttons: (Alert.Button, Alert.Button)?
+}
+
 struct ContentView: View {
     @State private var usedWords = [String]()
     @State private var rootWord = ""
     @State private var newWord = ""
-
-    @State private var errorTitle = ""
-    @State private var errorMessage = ""
-    @State private var showingError = false
+    @State private var alertItem: AlertItem?
 
     var score: Int {
         usedWords
@@ -43,15 +47,10 @@ struct ContentView: View {
             .navigationTitle(rootWord)
             .navigationBarItems(
                 leading: Text("Score: \(score)"),
-                trailing: Button("Restart") {
-                    startGame()
-                    usedWords = []
-                }
+                trailing: Button("Restart", action: promptRestart)
             )
             .onAppear(perform: startGame)
-            .alert(isPresented: $showingError) {
-                Alert(title: Text(errorTitle), message: Text(errorMessage))
-            }
+            .alert(item: $alertItem, content: createAlert)
         }
     }
 
@@ -65,37 +64,37 @@ struct ContentView: View {
         }
 
         guard !usedWords.contains(answer) else {
-            return showError(
-                title: "Word used already",
-                message: "Try something new!"
+            return alertItem = AlertItem(
+                title: Text("Word used already"),
+                message: Text("Try something new!")
             )
         }
 
         guard rootWord != answer else {
-            return showError(
-                title: "Word not allowed",
-                message: "You can't use the same word"
+            return alertItem = AlertItem(
+                title: Text("Word not allowed"),
+                message: Text("You can't use the same word")
             )
         }
 
         guard answer.count > 2 else {
-            return showError(
-                title: "Word too short",
-                message: "Use at least 3 characters"
+            return alertItem = AlertItem(
+                title: Text("Word too short"),
+                message: Text("Use at least 3 characters")
             )
         }
 
         guard rootWord.lowercased().contains(answer) else {
-            return showError(
-                title: "Word not valid",
-                message: "\"\(answer)\" isn't inside \"\(rootWord)\""
+            return alertItem = AlertItem(
+                title: Text("Word not valid"),
+                message: Text("\"\(answer)\" isn't inside \"\(rootWord)\"")
             )
         }
 
         guard isReal(word: answer) else {
-            return showError(
-                title: "Word not valid",
-                message: "\"\(answer)\" isn't a valid English word"
+            return alertItem = AlertItem(
+                title: Text("Word not valid"),
+                message: Text("\"\(answer)\" isn't a valid English word")
             )
         }
 
@@ -118,6 +117,37 @@ struct ContentView: View {
         rootWord = allWords.randomElement()!
     }
 
+    func promptRestart() {
+        alertItem = AlertItem(
+            title: Text("Confirm restart"),
+            message: Text("Would you like to restart the game?"),
+            buttons: (
+                .destructive(Text("Restart")) {
+                    startGame()
+                    usedWords = []
+                    newWord = ""
+                },
+                .cancel()
+            )
+        )
+    }
+
+    func createAlert(_ alertItem: AlertItem) -> Alert {
+        if let (primaryButton, secondaryButton) = alertItem.buttons {
+            return Alert(
+                title: alertItem.title,
+                message: alertItem.message,
+                primaryButton: primaryButton,
+                secondaryButton: secondaryButton
+            )
+        } else {
+            return Alert(
+                title: alertItem.title,
+                message: alertItem.message
+            )
+        }
+    }
+
     func isReal(word: String) -> Bool {
         let checker = UITextChecker()
         let range = NSRange(location: 0, length: word.utf16.count)
@@ -126,12 +156,6 @@ struct ContentView: View {
             in: word, range: range, startingAt: 0, wrap: false, language: "en"
         )
         return misspelledRange.location == NSNotFound
-    }
-
-    func showError(title: String, message: String) {
-        errorTitle = title
-        errorMessage = message
-        showingError = true
     }
 }
 
