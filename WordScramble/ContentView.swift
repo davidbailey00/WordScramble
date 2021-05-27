@@ -71,6 +71,20 @@ struct ContentView: View {
             )
         }
 
+        guard rootWord != answer else {
+            return showError(
+                title: "Word not allowed",
+                message: "You can't use the same word"
+            )
+        }
+
+        guard answer.count > 2 else {
+            return showError(
+                title: "Word too short",
+                message: "Use at least 3 characters"
+            )
+        }
+
         guard rootWord.lowercased().contains(answer) else {
             return showError(
                 title: "Word not valid",
