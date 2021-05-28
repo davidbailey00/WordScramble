@@ -94,7 +94,8 @@ struct ContentView: View {
             )
         }
 
-        usedWords.insert(answer, at: 0)
+        usedWords.append(answer)
+        usedWords.sort()
         newWord = ""
     }
 
